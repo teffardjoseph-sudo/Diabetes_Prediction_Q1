@@ -4,25 +4,24 @@ import numpy as np
 
 app = Flask(__name__)
 
-# Load model and scaler
-model = joblib.load("model.joblib")
-scaler = joblib.load("Scaler.joblib")
+# Load the trained machine learning model and scaler
+model = joblib.load('model.joblib')   # Ensure model.joblib is in the same folder
+scaler = joblib.load('Scaler.joblib') # Ensure Scaler.joblib is in the same folder
 
-@app.route('/')
-def index():
-    return "Diabetes Risk Prediction API is running"
 
-@app.route('/hanuman/<name>')
-def hanuman(name: str):
-    return f"{name} is a hanuman"
-
-@app.route('/predict', methods=["POST"])
+@app.route('/predict', methods=['POST'])
 def predict():
     try:
-        # Get JSON input
+        # Get JSON data from POST request
         input_data = request.get_json()
 
-        # Extract features (ORDER IS IMPORTANT)
+        # Required input fields
+        required_fields = ["Glucose", "Blood pressure", "Body mass index", "Age"]
+        for field in required_fields:
+            if field not in input_data:
+                return jsonify({"error": f"Missing field: {field}"}), 400
+
+        # Extract and format the data for prediction
         data = np.array([
             input_data["Glucose"],
             input_data["Blood pressure"],
@@ -37,7 +36,7 @@ def predict():
         probability = model.predict_proba(data)
         diabetes_risk = probability[0][1] * 100
 
-        # Risk level
+        # Risk level classification
         if diabetes_risk < 30:
             level = "Low Risk"
         elif diabetes_risk < 60:
@@ -45,6 +44,7 @@ def predict():
         else:
             level = "High Risk"
 
+        # Return the prediction
         return jsonify({
             "input": input_data,
             "Diabetes Risk (%)": round(diabetes_risk, 2),
@@ -54,7 +54,5 @@ def predict():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run(debug=True)
-
