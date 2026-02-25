@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 # Load model and scaler
 model = joblib.load("model.joblib")
-scaler = joblib.load("scaler.joblib")
+scaler = joblib.load("Scaler.joblib")
 
 @app.route('/')
 def index():
@@ -57,3 +57,4 @@ def predict():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
